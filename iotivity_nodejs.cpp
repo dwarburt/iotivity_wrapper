@@ -141,25 +141,12 @@ NAN_METHOD(ping) {
   NanReturnUndefined();
 }
 
-NAN_METHOD(callback) {
-  NanScope();
-  if (args.Length() < 1) {
-    NanThrowTypeError("invalid number of params");
-  }
-  cb = new NanCallback(args[0].As<Function>());
-  Local<Value> argv[1] = { NanNew("hello") };
-
-  cb->Call(1, argv);
-  NanReturnUndefined();
-}
-
 void init(Handle<Object> exports) {
   NanScope();
   EXPORT_CALLBACK(version);
   EXPORT_CALLBACK(stop);
   EXPORT_CALLBACK(start);
   EXPORT_CALLBACK(ping);
-  EXPORT_CALLBACK(callback);
 
   uv_mutex_init(&s_callbackQueueMutex);
   uv_async_init(uv_default_loop(), &s_notifyJs, notifyJsNow);
