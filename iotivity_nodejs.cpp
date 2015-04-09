@@ -5,6 +5,8 @@
 #include <queue>
 #include <vector>
 #include <iostream>
+#include <thread>
+#include <chrono>
 #include "csdkWrapper.h"
 
 #define EXPORT_CALLBACK(cb) exports->Set(NanNew("cb"), NanNew<FunctionTemplate>(cb)->GetFunction())
@@ -14,10 +16,9 @@ using namespace v8;
 static uv_mutex_t s_callbackQueueMutex;
 static uv_async_t s_notifyJs;
 static std::queue<CsdkWrapper::EntityHandlerInfo *> s_callbackQueue;
-static NanCallback *cb;
-static CsdkWrapper wrapper;
-static std::string gParams[CsdkWrapper::NUM_PARAMS];
-
+static NanCallback *s_cb;
+static std::thread *iotivityWorker;
+static bool s_quitFlag = false;
 CsdkWrapper::EntityHandlerResult entityHandlerCallback(CsdkWrapper::EntityHandlerInfo *request)
 {
   /*
@@ -27,7 +28,7 @@ CsdkWrapper::EntityHandlerResult entityHandlerCallback(CsdkWrapper::EntityHandle
   CsdkWrapper::EntityHandlerInfo *queRequest = new CsdkWrapper::EntityHandlerInfo(*request);
   for (unsigned int i = 0; i < CsdkWrapper::NUM_PARAMS; i++)
   {
-    queRequest->params[i] = gParams[i];
+    queRequest->params[i] = request->params[i];
   }
 
   /*
@@ -57,9 +58,9 @@ void pushUp(CsdkWrapper::EntityHandlerInfo *cbev)
   /*
    * Fill our array with params, these are the request params from iotivity.
    */
-  for (int i = 0; i < CsdkWrapper::NUM_PARAMS; i++)
+  for (uint8_t i = 0; i < CsdkWrapper::NUM_PARAMS; i++)
   {
-    params->Set(i, NanNew(toString(cbev.params[i])));
+    params->Set(i, NanNew(cbev->params[i]));
   }
 
   /*
@@ -74,7 +75,7 @@ void pushUp(CsdkWrapper::EntityHandlerInfo *cbev)
    * Execute the callback with our data object as the parameter.
    */
   Local<Value> argv[1] = { data };
-  cb->Call(1, argv);
+  s_cb->Call(1, argv);
 }
 
 /*
@@ -109,6 +110,24 @@ void notifyJsNow(uv_async_t *handle, int /*status UNUSED*/)
   uv_mutex_unlock(&s_callbackQueueMutex);
 }
 
+void doIotivityWork()
+{
+  CsdkWrapper wrapper;
+  if (!wrapper.start(entityHandlerCallback)) {
+    std::cerr << "Unable to start!";
+    return;
+  }
+
+  while (!s_quitFlag) {
+    if (!wrapper.process()) {
+      std::cerr << "Unable to process!";
+      break;
+    }
+    std::this_thread::sleep_for(std::chrono::seconds(2));
+  }
+  wrapper.stop();
+}
+
 NAN_METHOD(version) {
   NanScope();
   NanReturnValue(NanNew("0.1.0"));
@@ -124,20 +143,9 @@ NAN_METHOD(start) {
   if (args.Length() < 1) {
     NanThrowTypeError("invalid number of params");
   }
-  cb = new NanCallback(args[0].As<Function>());
+  s_cb = new NanCallback(args[0].As<Function>());
 
-  // TODO:  start background thread
-  NanReturnUndefined();
-}
-
-NAN_METHOD(ping) {
-  NanScope();
-  Local<Value> argv[1] = { NanNew("hello") };
-
-  cb->Call(1, argv);
-  Local<Value> argv2[1] = { NanNew("Goodbye") };
-
-  cb->Call(1, argv2);
+  iotivityWorker = new std::thread(doIotivityWork);
   NanReturnUndefined();
 }
 
@@ -146,7 +154,6 @@ void init(Handle<Object> exports) {
   EXPORT_CALLBACK(version);
   EXPORT_CALLBACK(stop);
   EXPORT_CALLBACK(start);
-  EXPORT_CALLBACK(ping);
 
   uv_mutex_init(&s_callbackQueueMutex);
   uv_async_init(uv_default_loop(), &s_notifyJs, notifyJsNow);
