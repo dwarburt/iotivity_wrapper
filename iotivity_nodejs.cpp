@@ -7,7 +7,11 @@
 #include <iostream>
 #include "csdkWrapper.h"
 
+#define EXPORT_CALLBACK(cb) exports->Set(NanNew("cb"), NanNew<FunctionTemplate>(cb)->GetFunction())
+
 using namespace v8;
+
+
 
 static uv_mutex_t s_callbackQueueMutex;
 static uv_async_t s_notifyJs;
@@ -18,35 +22,21 @@ static std::string gParams[CsdkWrapper::NUM_PARAMS];
 
 CsdkWrapper::EntityHandlerResult entityHandlerCallback(CsdkWrapper::EntityHandlerInfo *request)
 {
-    CsdkWrapper::EntityHandlerResult result = CsdkWrapper::EH_RESULT_ERROR;
 
-    CsdkWrapper::EntityHandlerInfo *queRequest = new CsdkWrapper::EntityHandlerInfo();
+  CsdkWrapper::EntityHandlerInfo *queRequest = new CsdkWrapper::EntityHandlerInfo(*request);
+  for (unsigned int i = 0; i < CsdkWrapper::NUM_PARAMS; i++)
+  {
+    queRequest->params[i] = gParams[i];
+  }
+  uv_mutex_lock(&s_callbackQueueMutex);
+  s_callbackQueue.push(queRequest);
+  uv_mutex_unlock(&s_callbackQueueMutex);
 
-    queRequest->method        = request->method;
-    queRequest->resource     = request->resource;
-    queRequest->requestHandle = request->requestHandle;
+  uv_async_send(&s_notifyJs);
 
-
-    if (request->method == "GET")
-    {
-        for (unsigned int i = 0; i < CsdkWrapper::NUM_PARAMS; i++)
-        {
-            queRequest->params[i] = gParams[i];
-        }
-        result = CsdkWrapper::EH_RESULT_OK;
-    }
-    else if (request->method == "PUT")
-    {
-        for (unsigned int i = 0; i < CsdkWrapper::NUM_PARAMS; i++)
-        {
-            gParams[i] = request->params[i];
-            std::cout << "param" << i + 1 << " = " << gParams[i] << std::endl;
-        }
-        result = CsdkWrapper::EH_RESULT_OK;
-    }
-
-    return result;
+  return CsdkWrapper::EH_RESULT_OK;
 }
+
 void notifyJsNow(uv_async_t *handle, int /*status UNUSED*/)
 {
     uv_mutex_lock(&s_callbackQueueMutex);
@@ -109,32 +99,14 @@ NAN_METHOD(callback) {
 
 void init(Handle<Object> exports) {
   NanScope();
-  exports->Set(
-    NanNew("version"),
-    NanNew<FunctionTemplate>(version)->GetFunction()
-  );
+  EXPORT_CALLBACK(version);
+  EXPORT_CALLBACK(stop);
+  EXPORT_CALLBACK(start);
+  EXPORT_CALLBACK(ping);
+  EXPORT_CALLBACK(callback);
+
   uv_mutex_init(&s_callbackQueueMutex);
   uv_async_init(uv_default_loop(), &s_notifyJs, notifyJsNow);
-
-  exports->Set(
-    NanNew("stop"),
-    NanNew<FunctionTemplate>(stop)->GetFunction()
-  );
-
-  exports->Set(
-    NanNew("start"),
-    NanNew<FunctionTemplate>(start)->GetFunction()
-  );
-
-  exports->Set(
-    NanNew("ping"),
-    NanNew<FunctionTemplate>(ping)->GetFunction()
-  );
-
-  exports->Set(
-    NanNew("callback"),
-    NanNew<FunctionTemplate>(callback)->GetFunction()
-  );
 }
 
 NODE_MODULE(iotivity_nodejs, init)
