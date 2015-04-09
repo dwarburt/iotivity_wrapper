@@ -18,13 +18,13 @@ static std::string gParams[CsdkWrapper::NUM_PARAMS];
 CsdkWrapper::EntityHandlerResult entityHandlerCallback(CsdkWrapper::EntityHandlerInfo *request)
 {
     CsdkWrapper::EntityHandlerResult result = CsdkWrapper::EH_RESULT_ERROR;
-    
+
     CsdkWrapper::EntityHandlerInfo *queRequest = new CsdkWrapper::EntityHandlerInfo();
-    
+
     queRequest->method        = request->method;
     queRequeset->resource     = request->resource;
     queRequest->requestHandle = request->requestHandle;
-    
+
 
     if (request->method == "GET")
     {
@@ -54,7 +54,7 @@ void notifyJsNow(uv_async_t *handle, int /*status UNUSED*/)
         auto *cbev = s_callbackQueue.front();
         uv_mutex_unlock(&s_callbackQueueMutex);
         // TODO: Propigate event data to JavaScript
-        //cbev->executeCallback();  
+        //cbev->executeCallback();
         uv_mutex_lock(&s_callbackQueueMutex);
         s_callbackQueue.pop();
         delete cbev;
@@ -69,7 +69,7 @@ NAN_METHOD(version) {
 
 NAN_METHOD(stop) {
   NanScope();
-  NanReturnValue(NanNew("***stopping now***"));  
+  NanReturnValue(NanNew("***stopping now***"));
 }
 
 NAN_METHOD(start) {
@@ -78,7 +78,7 @@ NAN_METHOD(start) {
     NanThrowTypeError("invalid number of params");
   }
   cb = new NanCallback(args[0].As<Function>());
- 
+
   // TODO:  start background thread
   NanReturnUndefined();
 }
@@ -86,12 +86,12 @@ NAN_METHOD(start) {
 NAN_METHOD(ping) {
   NanScope();
   Local<Value> argv[1] = { NanNew("hello") };
-  
+
   cb->Call(1, argv);
   Local<Value> argv2[1] = { NanNew("Goodbye") };
 
   cb->Call(1, argv2);
-  NanReturnUndefined();  
+  NanReturnUndefined();
 }
 
 NAN_METHOD(callback) {
@@ -110,21 +110,21 @@ void init(Handle<Object> exports) {
   NanScope();
   exports->Set(
     NanNew("version"),
-    NanNew<FunctionTemplate>(version)->GetFunction()  
+    NanNew<FunctionTemplate>(version)->GetFunction()
   );
   uv_mutex_init(&s_callbackQueueMutex);
-  uv_async_init(uv_default_loop(), &s_notifyJs, notifyJsNow);  
-  
+  uv_async_init(uv_default_loop(), &s_notifyJs, notifyJsNow);
+
   exports->Set(
     NanNew("stop"),
     NanNew<FunctionTemplate>(stop)->GetFunction()
   );
-  
+
   exports->Set(
     NanNew("start"),
     NanNew<FunctionTemplate>(start)->GetFunction()
   );
-    
+
   exports->Set(
     NanNew("ping"),
     NanNew<FunctionTemplate>(ping)->GetFunction()
