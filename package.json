@@ -1,0 +1,21 @@
+{
+  "name": "iotivity_nodejs",
+  "version": "0.1.0",
+  "description": "An iotivity wrapper for nodejs",
+  "main": "index.js",
+  "scripts": {
+    "test": "grunt test"
+  },
+  "keywords": [
+    "iotivity",
+    "iot"
+  ],
+  "author": "David Warburton <david.warburton@intel.com>",
+  "license": "Iotivity License",
+  "dependencies": {
+    "grunt": "^0.4.5",
+    "grunt-contrib-uglify": "~0.5.0",
+    "bindings": "~1.2.1",
+    "nan": "^1.3.0"
+  }
+}
