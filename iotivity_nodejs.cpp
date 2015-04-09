@@ -4,6 +4,7 @@
 #include <nan.h>
 #include <queue>
 #include <vector>
+#include <iostream>
 #include "csdkWrapper.h"
 
 using namespace v8;
@@ -22,7 +23,7 @@ CsdkWrapper::EntityHandlerResult entityHandlerCallback(CsdkWrapper::EntityHandle
     CsdkWrapper::EntityHandlerInfo *queRequest = new CsdkWrapper::EntityHandlerInfo();
 
     queRequest->method        = request->method;
-    queRequeset->resource     = request->resource;
+    queRequest->resource     = request->resource;
     queRequest->requestHandle = request->requestHandle;
 
 
