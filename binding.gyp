@@ -1,6 +1,6 @@
 {
   "variables": {
-    "iotivity_sdk": "<!(echo $HOME)/git/iotivity"
+    "iotivity_sdk": "<!(echo $HOME)/Documents/GIT/iotivity"
   },
   "targets": [
     {
@@ -18,12 +18,8 @@
         "csdkWrapper.cpp"
       ],
       "libraries":[
-        "-L<@(iotivity_sdk)/out/linux/x86_64/release",
-        "-loc",
-        "-loctbstack",
-        "-loc_logger",
-        "-loc_logger_core",
-        "-lcoap"
+        "-L<@(iotivity_sdk)/resource/csdk/linux/release",
+        "-loctbstack"
       ]
     }
   ]
