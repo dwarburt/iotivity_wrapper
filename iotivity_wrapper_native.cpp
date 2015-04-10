@@ -57,6 +57,9 @@ NAN_METHOD(respond)
   responseInfo.method   = std::string(*NanUtf8String(args.This()->Get(NanNew("method"))));
   responseInfo.requestHandle = (void *)NanUInt32OptionValue(args.This(), NanNew("requestHandle"), 0);
   responseInfo.resourceHandle = (void *)NanUInt32OptionValue(args.This(), NanNew("resourceHandle"), 0);
+//debug
+  printf("from js req handle: %p\n", responseInfo.requestHandle);
+  printf("from js resource handle: %p", responseInfo.resourceHandle);
 
   for (uint8_t i = 0; i < CsdkWrapper::NUM_PARAMS; i++) {
     responseInfo.params[i] = std::string(*NanUtf8String(args.This()->Get(i)));
@@ -81,6 +84,10 @@ void pushUp(CsdkWrapper::EntityHandlerInfo *cbev)
   {
     params->Set(i, NanNew(cbev->params[i]));
   }
+
+  //debug
+  printf("to js req handle: %p\n", cbev->requestHandle);
+  printf("to js resource handle: %p", cbev->resourceHandle);
 
   /*
    * Set the properties of the Object.
