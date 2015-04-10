@@ -1,6 +1,6 @@
 {
   "variables": {
-    "iotivity_sdk": "<!(echo $HOME)/Documents/GIT/iotivity"
+    "iotivity_sdk": "<!(echo $IOTIVITY_HOME)"
   },
   "targets": [
     {

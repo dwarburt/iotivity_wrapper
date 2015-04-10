@@ -19,7 +19,8 @@ static std::queue<CsdkWrapper::EntityHandlerInfo *> s_callbackQueue;
 static NanCallback *s_cb;
 static std::thread *s_iotivityWorker;
 static bool s_quitFlag = false;
-static CsdkWrapper s_wrapper;
+static CsdkWrapper *s_wrapper;
+
 CsdkWrapper::EntityHandlerResult entityHandlerCallback(CsdkWrapper::EntityHandlerInfo *request)
 {
   /*
@@ -47,6 +48,7 @@ CsdkWrapper::EntityHandlerResult entityHandlerCallback(CsdkWrapper::EntityHandle
 
   return CsdkWrapper::EH_RESULT_SLOW;
 }
+
 NAN_METHOD(respond)
 {
   NanScope();
@@ -58,9 +60,10 @@ NAN_METHOD(respond)
   for (uint8_t i = 0; i < CsdkWrapper::NUM_PARAMS; i++) {
     responseInfo.params[i] = std::string(*NanUtf8String(args.This()->Get(i)));
   }
-  s_wrapper.respond(&responseInfo);
+  s_wrapper->respond(&responseInfo);
   NanReturnUndefined();
 }
+
 void pushUp(CsdkWrapper::EntityHandlerInfo *cbev)
 {
   /*
@@ -129,19 +132,20 @@ void notifyJsNow(uv_async_t *handle, int /*status UNUSED*/)
 
 void doIotivityWork()
 {
-  if (!s_wrapper.start(entityHandlerCallback)) {
+  if (!s_wrapper->start(entityHandlerCallback)) {
     std::cerr << "Unable to start!";
     return;
   }
 
   while (!s_quitFlag) {
-    if (!s_wrapper.process()) {
+    if (!s_wrapper->process()) {
       std::cerr << "Unable to process!";
       break;
     }
     std::this_thread::sleep_for(std::chrono::seconds(2));
   }
-  s_wrapper.stop();
+  s_wrapper->stop();
+  delete s_wrapper;
 }
 
 NAN_METHOD(version) {
@@ -157,6 +161,7 @@ NAN_METHOD(stop) {
 
 NAN_METHOD(start) {
   NanScope();
+  s_wrapper = new CsdkWrapper();
   if (args.Length() < 1) {
     NanThrowTypeError("invalid number of params");
   }
