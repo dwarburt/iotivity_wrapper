@@ -47,6 +47,11 @@ CsdkWrapper::EntityHandlerResult entityHandlerCallback(CsdkWrapper::EntityHandle
 
   return CsdkWrapper::EH_RESULT_OK;
 }
+NAN_METHOD(respond)
+{
+  NanScope();
+  NanReturnUndefined();
+}
 void pushUp(CsdkWrapper::EntityHandlerInfo *cbev)
 {
   /*
@@ -69,8 +74,9 @@ void pushUp(CsdkWrapper::EntityHandlerInfo *cbev)
    */
 
   data->Set(NanNew("resource"), NanNew(cbev->resource));
-  data->Set(NanNew("method"), NanNew(cbev->method));
-  data->Set(NanNew("params"), params);
+  data->Set(NanNew("method"  ), NanNew(cbev->method));
+  data->Set(NanNew("params"  ), params);
+  data->Set(NanNew("respond" ), NanNew<FunctionTemplate>(respond)->GetFunction());
 
   /*
    * Execute the callback with our data object as the parameter.
