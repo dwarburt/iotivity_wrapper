@@ -1,8 +1,8 @@
 {
-  "name": "iotivity_nodejs",
+  "name": "iotivity_wrapper",
   "version": "0.1.0",
   "description": "An iotivity wrapper for nodejs",
-  "main": "index.js",
+  "main": "main.js",
   "scripts": {
     "test": "grunt test"
   },
