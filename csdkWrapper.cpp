@@ -49,7 +49,22 @@ static char* constructJsonResponse (OCEntityHandlerRequest *ehRequest)
 
     return jsonResponse;
 }
+std::string CsdkWrapper::EntityHandlerInfo::json()
+{
+    cJSON *json = cJSON_CreateObject();
+    cJSON *json_params = cJSON_CreateArray();
 
+    cJSON_AddStringToObject(json, "resource", resource.c_str());
+    cJSON_AddStringToObject(json, "method", method.c_str());
+
+    for (uint8_t i = 0; i < CsdkWrapper::NUM_PARAMS; i++) {
+        cJSON_AddItemToArray(json_params, cJSON_CreateString(params[i].c_str()));
+    }
+    cJSON_AddItemToObject(json, "params", json_params);
+    std::string ret(cJSON_Print(json));
+    cJSON_Delete(json);
+    return ret;
+}
 static OCEntityHandlerResult ProcessGetRequest (OCEntityHandlerRequest *ehRequest, char *payload, uint16_t maxPayloadSize)
 {
     OCEntityHandlerResult ehResult;

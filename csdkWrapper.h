@@ -24,6 +24,8 @@ public:
         std::string method;
         // Resource parameters
         std::string params[NUM_PARAMS];
+
+        std::string json();
     };
 
     typedef EntityHandlerResult (*EntityHandler)(EntityHandlerInfo *request);
