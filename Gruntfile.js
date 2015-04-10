@@ -14,10 +14,18 @@ module.exports = function(grunt) {
   });
 
   grunt.registerTask('start', 'IoTivity start', function() {
-    var handlInfo = function(handlerInfo) {
-    };
+    function handleRequest(req) {
+      console.log("Got a request for: " + req.resource);
+      req.respond();
+    }
 
-  grunt.log.write('Running iotivity_nodejs start: ' + iot.start(handlInfo) ).ok();
+    console.log("Booting iotivity");
+
+    iot.start(handleRequest);
+
+    //don't exit
+    setInterval(function() {  }, 3000 );
+
   });
 
 }

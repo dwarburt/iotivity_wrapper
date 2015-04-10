@@ -14,7 +14,7 @@
         "<@(iotivity_sdk)/extlibs/cjson/",
       ],
       "sources": [
-        "iotivity_nodejs.cpp",
+        "iotivity_wrapper_native.cpp",
         "csdkWrapper.cpp"
       ],
       "cflags_cc": [ "-std=c++0x" ],
