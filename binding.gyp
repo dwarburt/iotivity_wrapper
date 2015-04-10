@@ -4,7 +4,7 @@
   },
   "targets": [
     {
-      "target_name": "iotivity_nodejs",
+      "target_name": "iotivity_wrapper_native",
       "include_dirs": [
         "<!(node -e \"require('nan')\")",
         "<@(iotivity_sdk)/resource/csdk/logger/include",

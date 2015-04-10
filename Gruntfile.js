@@ -1,4 +1,4 @@
-iot = require("bindings")("iotivity_nodejs");
+iot = require("bindings")("iotivity_wrapper_native");
 
 module.exports = function(grunt) {
   grunt.initConfig({
@@ -17,7 +17,7 @@ module.exports = function(grunt) {
     var handlInfo = function(handlerInfo) {
     };
 
-    grunt.log.write('Running iotivity_nodejs start: ' + iot.start(handlInfo) ).ok();
+  grunt.log.write('Running iotivity_nodejs start: ' + iot.start(handlInfo) ).ok();
   });
 
 }

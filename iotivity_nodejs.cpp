@@ -9,7 +9,7 @@
 #include <chrono>
 #include "csdkWrapper.h"
 
-#define EXPORT_FUNCTION(cb) exports->Set(NanNew("cb"), NanNew<FunctionTemplate>(cb)->GetFunction())
+#define EXPORT_FUNCTION(cb) exports->Set(NanNew(#cb), NanNew<FunctionTemplate>(cb)->GetFunction())
 
 using namespace v8;
 
@@ -181,7 +181,7 @@ void init(Handle<Object> exports) {
   uv_async_init(uv_default_loop(), &s_notifyJs, notifyJsNow);
 }
 
-NODE_MODULE(iotivity_nodejs, init)
+NODE_MODULE(iotivity_wrapper_native, init)
 
 
 

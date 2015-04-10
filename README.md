@@ -7,7 +7,7 @@ of the csdk to nodejs.
 
 To build: 
 
-1) have iotivity checked out and built on your system.
-2) set the environment variable IOTIVITY_HOME to the root of iotivity
+1. have iotivity checked out and built on your system.
+2. set the environment variable IOTIVITY_HOME to the root of iotivity
 
-N.B. tested against the plugfest-1 branch.
+**N.B. tested against the plugfest-1 branch.**
