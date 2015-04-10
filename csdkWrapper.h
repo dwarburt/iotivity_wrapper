@@ -11,6 +11,7 @@ public:
     };
 
     typedef void *RequestHandle;
+    typedef void *ResourceHandle;
 
     static const size_t NUM_PARAMS = 4;
 
@@ -18,6 +19,8 @@ public:
     {
         // Resource name that callback is invoked for
         std::string resource;
+        // Resource handle
+        ResourceHandle resourceHandle;
         // Handle of request
         RequestHandle requestHandle;
         // REST method from received request
@@ -38,6 +41,4 @@ public:
 
 private:
     bool createResource();
-    EntityHandler mHandler;
-    std::string mParams[NUM_PARAMS];
 };
