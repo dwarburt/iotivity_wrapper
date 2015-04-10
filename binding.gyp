@@ -18,6 +18,9 @@
         "csdkWrapper.cpp"
       ],
       "cflags_cc": [ "-std=c++0x" ],
+      "defines": [
+        "TB_LOG"
+      ],
       "libraries":[
         "-L<@(iotivity_sdk)/resource/csdk/linux/release",
         "-loctbstack"
