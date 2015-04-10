@@ -9,7 +9,7 @@
 #include <chrono>
 #include "csdkWrapper.h"
 
-#define EXPORT_CALLBACK(cb) exports->Set(NanNew("cb"), NanNew<FunctionTemplate>(cb)->GetFunction())
+#define EXPORT_FUNCTION(cb) exports->Set(NanNew("cb"), NanNew<FunctionTemplate>(cb)->GetFunction())
 
 using namespace v8;
 
@@ -17,8 +17,9 @@ static uv_mutex_t s_callbackQueueMutex;
 static uv_async_t s_notifyJs;
 static std::queue<CsdkWrapper::EntityHandlerInfo *> s_callbackQueue;
 static NanCallback *s_cb;
-static std::thread *iotivityWorker;
+static std::thread *s_iotivityWorker;
 static bool s_quitFlag = false;
+static CsdkWrapper s_wrapper;
 CsdkWrapper::EntityHandlerResult entityHandlerCallback(CsdkWrapper::EntityHandlerInfo *request)
 {
   /*
@@ -112,20 +113,19 @@ void notifyJsNow(uv_async_t *handle, int /*status UNUSED*/)
 
 void doIotivityWork()
 {
-  CsdkWrapper wrapper;
-  if (!wrapper.start(entityHandlerCallback)) {
+  if (!s_wrapper.start(entityHandlerCallback)) {
     std::cerr << "Unable to start!";
     return;
   }
 
   while (!s_quitFlag) {
-    if (!wrapper.process()) {
+    if (!s_wrapper.process()) {
       std::cerr << "Unable to process!";
       break;
     }
     std::this_thread::sleep_for(std::chrono::seconds(2));
   }
-  wrapper.stop();
+  s_wrapper.stop();
 }
 
 NAN_METHOD(version) {
@@ -145,15 +145,15 @@ NAN_METHOD(start) {
   }
   s_cb = new NanCallback(args[0].As<Function>());
 
-  iotivityWorker = new std::thread(doIotivityWork);
+  s_iotivityWorker = new std::thread(doIotivityWork);
   NanReturnUndefined();
 }
 
 void init(Handle<Object> exports) {
   NanScope();
-  EXPORT_CALLBACK(version);
-  EXPORT_CALLBACK(stop);
-  EXPORT_CALLBACK(start);
+  EXPORT_FUNCTION(version);
+  EXPORT_FUNCTION(stop);
+  EXPORT_FUNCTION(start);
 
   uv_mutex_init(&s_callbackQueueMutex);
   uv_async_init(uv_default_loop(), &s_notifyJs, notifyJsNow);
