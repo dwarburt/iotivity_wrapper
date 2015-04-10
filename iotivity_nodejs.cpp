@@ -45,7 +45,7 @@ CsdkWrapper::EntityHandlerResult entityHandlerCallback(CsdkWrapper::EntityHandle
    */
   uv_async_send(&s_notifyJs);
 
-  return CsdkWrapper::EH_RESULT_OK;
+  return CsdkWrapper::EH_RESULT_SLOW;
 }
 NAN_METHOD(respond)
 {
@@ -53,6 +53,7 @@ NAN_METHOD(respond)
   CsdkWrapper::EntityHandlerInfo responseInfo;
   responseInfo.resource = std::string(*NanUtf8String(args.This()->Get(NanNew("resource"))));
   responseInfo.method   = std::string(*NanUtf8String(args.This()->Get(NanNew("method"))));
+  responseInfo.requestHandle = (void *)NanUInt32OptionValue(args.This(), NanNew("requestHandle"), 0);
 
   for (uint8_t i = 0; i < CsdkWrapper::NUM_PARAMS; i++) {
     responseInfo.params[i] = std::string(*NanUtf8String(args.This()->Get(i)));
@@ -83,6 +84,7 @@ void pushUp(CsdkWrapper::EntityHandlerInfo *cbev)
 
   data->Set(NanNew("resource"), NanNew(cbev->resource));
   data->Set(NanNew("method"  ), NanNew(cbev->method));
+  data->Set(NanNew("requestHandle"  ), NanNew(cbev->requestHandle));
   data->Set(NanNew("params"  ), params);
   data->Set(NanNew("respond" ), NanNew<FunctionTemplate>(respond)->GetFunction());
 
@@ -149,6 +151,7 @@ NAN_METHOD(version) {
 
 NAN_METHOD(stop) {
   NanScope();
+  s_quitFlag = true;
   NanReturnValue(NanNew("***stopping now***"));
 }
 

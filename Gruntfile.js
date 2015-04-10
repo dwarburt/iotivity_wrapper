@@ -6,7 +6,7 @@ module.exports = function(grunt) {
   });
 
   grunt.registerTask('version', 'IoTivity version', function() {
-    grunt.log.write('Running iotivity_nodejs version: ' + iot.version() ).ok();
+    grunt.log.write('Running iotivity_nodejs version: ' ).ok();
   });
 
   grunt.registerTask('stop', 'IoTivity stop', function() {
