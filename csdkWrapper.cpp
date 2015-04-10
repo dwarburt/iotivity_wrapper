@@ -20,7 +20,7 @@ CsdkWrapper::EntityHandler gHandler;
 
 //This function takes the request as an input and returns the response
 //in JSON format.
-static char* constructJsonResponse (OCEntityHandlerRequest *ehRequest)
+static char* constructJsonResponse(OCEntityHandlerRequest *ehRequest)
 {
     cJSON *json = cJSON_CreateObject();
     cJSON *format;
@@ -43,6 +43,25 @@ static char* constructJsonResponse (OCEntityHandlerRequest *ehRequest)
     cJSON_AddStringToObject(format, "param2", gParams[1].c_str());
     cJSON_AddStringToObject(format, "param3", gParams[2].c_str());
     cJSON_AddStringToObject(format, "param4", gParams[3].c_str());
+
+    jsonResponse = cJSON_Print(json);
+    cJSON_Delete(json);
+
+    return jsonResponse;
+}
+
+static char* constructJsonPayload(CsdkWrapper::EntityHandlerInfo *response)
+{
+    cJSON *json = cJSON_CreateObject();
+    cJSON *format;
+    char *jsonResponse;
+
+    cJSON_AddStringToObject(json,"href", gUri.c_str());
+    cJSON_AddItemToObject(json, "rep", format=cJSON_CreateObject());
+    cJSON_AddStringToObject(format, "param1", response->params[0].c_str());
+    cJSON_AddStringToObject(format, "param2", response->params[1].c_str());
+    cJSON_AddStringToObject(format, "param3", response->params[2].c_str());
+    cJSON_AddStringToObject(format, "param4", response->params[3].c_str());
 
     jsonResponse = cJSON_Print(json);
     cJSON_Delete(json);
@@ -239,7 +258,7 @@ OCEntityHandlerResult OCEntityHandlerCb(OCEntityHandlerFlag     flag,
         }
     }
 
-    // If the result isn't an error or forbidden, send response
+    // If the result isn't an error or slow, send response
     if (ehResult == OC_EH_OK)
     {
         // Format the response.  Note this requires some info about the request
@@ -259,7 +278,6 @@ OCEntityHandlerResult OCEntityHandlerCb(OCEntityHandlerFlag     flag,
         }
     }
 
-
     return ehResult;
 }
 
@@ -277,8 +295,7 @@ CsdkWrapper::CsdkWrapper()
     uint16_t port = OC_WELL_KNOWN_PORT;
 #if 1
     uint8_t addr[20] = {};
-    uint8_t ifname[] = "wlan0";
-    int opt;
+    uint8_t ifname[] = "eth0";
 
     if ( OCGetInterfaceAddress(ifname, sizeof(ifname), AF_INET, addr,
                 sizeof(addr)) == OC_ERR_SUCCESS)
@@ -286,11 +303,8 @@ CsdkWrapper::CsdkWrapper()
         OC_LOG_V(INFO, TAG, "Starting iotivity server on address %s:%d",addr,port);
         paddr = addr;
     }
-    else
-    {
-        OC_LOG(ERROR, TAG, "Error starting iotivity server");
-    }
 #endif
+
     if (OCInit((char *) paddr, port, OC_SERVER) != OC_STACK_OK)
     {
         OC_LOG(ERROR, TAG, "OCStack init error");
@@ -325,26 +339,32 @@ bool CsdkWrapper::stop()
 
 bool CsdkWrapper::respond(EntityHandlerInfo *response)
 {
+    OC_LOG(INFO, TAG, "Sending response");
+
     OCEntityHandlerResponse entityHandlerResponse;
-#if 0
-    // Format the response.  Note this requires some info about the request
-    response.requestHandle = entityHandlerRequest->requestHandle;
-    response.resourceHandle = entityHandlerRequest->resource;
-    response.ehResult = ehResult;
-    response.payload = (unsigned char *)payload;
-    response.payloadSize = strlen(payload);
+
+    entityHandlerResponse.requestHandle = response->requestHandle;
+    entityHandlerResponse.resourceHandle = response->resourceHandle;
+    entityHandlerResponse.ehResult = OC_EH_OK;
+    entityHandlerResponse.numSendVendorSpecificHeaderOptions = 0;
+    memset(entityHandlerResponse.sendVendorSpecificHeaderOptions, 0, sizeof entityHandlerResponse.sendVendorSpecificHeaderOptions);
+    memset(entityHandlerResponse.resourceUri, 0, sizeof(entityHandlerResponse.resourceUri));
     // Indicate that response is NOT in a persistent buffer
-    response.persistentBufferFlag = 0;
-#endif
+    entityHandlerResponse.persistentBufferFlag = 0;
+    // Generate json for payload
+    char *getResp = constructJsonPayload(response);
+    entityHandlerResponse.payload = (unsigned char *)getResp;
+    entityHandlerResponse.payloadSize = strlen(getResp) + 1;
+
     // Send the response
     if (OCDoResponse(&entityHandlerResponse) != OC_STACK_OK)
     {
         OC_LOG(ERROR, TAG, "Error sending response");
         return false;
     }
+    free(getResp);
 
     return true;
-
 }
 
 bool CsdkWrapper::process()
