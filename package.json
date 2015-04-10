@@ -13,9 +13,10 @@
   "author": "David Warburton <david.warburton@intel.com>",
   "license": "Iotivity License",
   "dependencies": {
-    "grunt": "^0.4.5",
-    "grunt-contrib-uglify": "~0.5.0",
     "bindings": "~1.2.1",
     "nan": "^1.3.0"
+  },
+  "devDependencies": {
+    "grunt": "^0.4.5"
   }
 }
