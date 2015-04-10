@@ -50,6 +50,14 @@ CsdkWrapper::EntityHandlerResult entityHandlerCallback(CsdkWrapper::EntityHandle
 NAN_METHOD(respond)
 {
   NanScope();
+  CsdkWrapper::EntityHandlerInfo responseInfo;
+  responseInfo.resource = std::string(*NanUtf8String(args.This()->Get(NanNew("resource"))));
+  responseInfo.method   = std::string(*NanUtf8String(args.This()->Get(NanNew("method"))));
+
+  for (uint8_t i = 0; i < CsdkWrapper::NUM_PARAMS; i++) {
+    responseInfo.params[i] = std::string(*NanUtf8String(args.This()->Get(i)));
+  }
+  s_wrapper.respond(&responseInfo);
   NanReturnUndefined();
 }
 void pushUp(CsdkWrapper::EntityHandlerInfo *cbev)
