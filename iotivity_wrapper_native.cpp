@@ -54,8 +54,12 @@ NAN_METHOD(respond)
   CsdkWrapper::EntityHandlerInfo responseInfo;
   responseInfo.resource = std::string(*NanUtf8String(args.This()->Get(NanNew("resource"))));
   responseInfo.method   = std::string(*NanUtf8String(args.This()->Get(NanNew("method"))));
-  responseInfo.requestHandle = (void *)std::stol(std::string(*NanUtf8String(args.This()->Get(NanNew("requestHandle")))));
-  responseInfo.resourceHandle = (void *)std::stol(std::string(*NanUtf8String(args.This()->Get(NanNew("resourceHandle")))));
+  std::string reqh(*NanUtf8String(args.This()->Get(NanNew("requestHandle"))));
+  std::string resh(*NanUtf8String(args.This()->Get(NanNew("resourceHandle"))));
+  std::cout << "trying reqh " << reqh << std::endl;
+  std::cout << "trying resh" << resh << std::endl;
+  responseInfo.requestHandle = (void *)std::stol(reqh);
+  responseInfo.resourceHandle = (void *)std::stol(resh);
 //debug
   printf("from js req handle: %p\n", responseInfo.requestHandle);
   printf("from js resource handle: %p\n", responseInfo.resourceHandle);
