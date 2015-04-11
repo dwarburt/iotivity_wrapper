@@ -48,18 +48,17 @@ CsdkWrapper::EntityHandlerResult entityHandlerCallback(CsdkWrapper::EntityHandle
 
   return CsdkWrapper::EH_RESULT_SLOW;
 }
-
 NAN_METHOD(respond)
 {
   NanScope();
   CsdkWrapper::EntityHandlerInfo responseInfo;
   responseInfo.resource = std::string(*NanUtf8String(args.This()->Get(NanNew("resource"))));
   responseInfo.method   = std::string(*NanUtf8String(args.This()->Get(NanNew("method"))));
-  responseInfo.requestHandle = (void *)NanUInt32OptionValue(args.This(), NanNew("requestHandle"), 0);
-  responseInfo.resourceHandle = (void *)NanUInt32OptionValue(args.This(), NanNew("resourceHandle"), 0);
+  responseInfo.requestHandle = (void *)std::stol(std::string(*NanUtf8String(args.This()->Get(NanNew("requestHandle")))));
+  responseInfo.resourceHandle = (void *)std::stol(std::string(*NanUtf8String(args.This()->Get(NanNew("resourceHandle")))));
 //debug
   printf("from js req handle: %p\n", responseInfo.requestHandle);
-  printf("from js resource handle: %p", responseInfo.resourceHandle);
+  printf("from js resource handle: %p\n", responseInfo.resourceHandle);
 
   for (uint8_t i = 0; i < CsdkWrapper::NUM_PARAMS; i++) {
     responseInfo.params[i] = std::string(*NanUtf8String(args.This()->Get(i)));
@@ -87,7 +86,7 @@ void pushUp(CsdkWrapper::EntityHandlerInfo *cbev)
 
   //debug
   printf("to js req handle: %p\n", cbev->requestHandle);
-  printf("to js resource handle: %p", cbev->resourceHandle);
+  printf("to js resource handle: %p\n", cbev->resourceHandle);
 
   /*
    * Set the properties of the Object.
@@ -95,8 +94,9 @@ void pushUp(CsdkWrapper::EntityHandlerInfo *cbev)
 
   data->Set(NanNew("resource"), NanNew(cbev->resource));
   data->Set(NanNew("method"  ), NanNew(cbev->method));
-  data->Set(NanNew("requestHandle"  ), NanNew(cbev->requestHandle));
-  data->Set(NanNew("resourceHandle"  ), NanNew(cbev->resourceHandle));
+  data->Set(NanNew("requestHandle"   ), NanNew(std::to_string((size_t)cbev->requestHandle)));
+  data->Set(NanNew("resourceHandle"  ), NanNew(std::to_string((size_t)cbev->resourceHandle)));
+
   data->Set(NanNew("params"  ), params);
   data->Set(NanNew("respond" ), NanNew<FunctionTemplate>(respond)->GetFunction());
 

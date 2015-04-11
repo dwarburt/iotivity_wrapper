@@ -12,6 +12,9 @@ module.exports = function(grunt) {
   grunt.registerTask('stop', 'IoTivity stop', function() {
     grunt.log.write('Running iotivity_nodejs stop: ' + iot.stop() ).ok();
   });
+  grunt.registerTask('test', 'IoTivity stssop', function() {
+    grunt.log.write('Running iotivity_nodejs test: ' + iot.tstCast() ).ok();
+  });
 
   grunt.registerTask('start', 'IoTivity start', function() {
     function handleRequest(req) {
