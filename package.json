@@ -1,6 +1,6 @@
 {
   "name": "iotivity_wrapper",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "An iotivity wrapper for nodejs",
   "main": "main.js",
   "scripts": {
