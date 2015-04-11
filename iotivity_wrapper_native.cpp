@@ -74,12 +74,10 @@ NAN_METHOD(respond)
   std::pair<void*, void*> hands = getHandles(reqNum);
   responseInfo.requestHandle = hands.first;
   responseInfo.resourceHandle = hands.second;
-  //debug
-  printf("from js req handle: %p\n", responseInfo.requestHandle);
-  printf("from js resource handle: %p\n", responseInfo.resourceHandle);
 
+  Handle<Array> myParams = args.This()->Get(NanNew("params")).As<Array>();
   for (uint8_t i = 0; i < CsdkWrapper::NUM_PARAMS; i++) {
-    responseInfo.params[i] = std::string(*NanUtf8String(args.This()->Get(i)));
+    responseInfo.params[i] = std::string(*NanUtf8String(myParams->Get(i)));
   }
   s_wrapper->respond(&responseInfo);
   NanReturnUndefined();
@@ -103,10 +101,6 @@ void pushUp(CsdkWrapper::EntityHandlerInfo *cbev)
   }
 
   uint32_t num = saveHandles(cbev->requestHandle, cbev->resourceHandle);
-
-  //debug
-  printf("to js req handle: %p\n", cbev->requestHandle);
-  printf("to js resource handle: %p\n", cbev->resourceHandle);
 
   /*
    * Set the properties of the Object.
