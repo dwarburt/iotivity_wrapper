@@ -94,6 +94,7 @@ static OCEntityHandlerResult ProcessGetRequest (OCEntityHandlerRequest *ehReques
     {
         request.method = "GET";
         request.requestHandle = ehRequest->requestHandle;
+        request.resourceHandle = ehRequest->resource;
         request.resource = gUri;
         for (unsigned int i = 0; i < CsdkWrapper::NUM_PARAMS; i++)
         {
@@ -152,6 +153,7 @@ static OCEntityHandlerResult ProcessPutRequest (OCEntityHandlerRequest *ehReques
         {
             request.method = "PUT";
             request.requestHandle = ehRequest->requestHandle;
+            request.resourceHandle = ehRequest->resource;
             request.resource = gUri;
             for (unsigned int i = 0; i < CsdkWrapper::NUM_PARAMS; i++)
             {
