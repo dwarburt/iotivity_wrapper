@@ -172,7 +172,7 @@ void doIotivityWork()
 
 NAN_METHOD(version) {
   NanScope();
-  NanReturnValue(NanNew("0.1.0"));
+  NanReturnValue(NanNew("0.2.0"));
 }
 
 NAN_METHOD(stop) {
