@@ -19,14 +19,14 @@ prereqs: git and node and iotivity installed.
 
 Example
 
->    iot = require("iotivity_wrapper");
->    function handleRequest(req) {
->      console.log("Got a request for: " + req.resource);
->      req.respond();
->    }
->
->    console.log("Booting iotivity");
->
->    iot.start(handleRequest);
->
+    iot = require("iotivity_wrapper");
+    function handleRequest(req) {
+      console.log("Got a request for: " + req.resource);
+      req.respond();
+    }
+
+    console.log("Booting iotivity");
+
+    iot.start(handleRequest);
+
 
