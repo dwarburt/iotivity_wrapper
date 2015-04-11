@@ -114,7 +114,7 @@ void pushUp(CsdkWrapper::EntityHandlerInfo *cbev)
 
   data->Set(NanNew("resource"), NanNew(cbev->resource));
   data->Set(NanNew("method"  ), NanNew(cbev->method));
-  data->Set(NanNew("requestNumber"   ), NanNew(std::to_string(num)));
+  data->Set(NanNew("requestNumber"   ), NanNew<Integer>(uint32_t(num)));
 
   data->Set(NanNew("params"  ), params);
   data->Set(NanNew("respond" ), NanNew<FunctionTemplate>(respond)->GetFunction());
