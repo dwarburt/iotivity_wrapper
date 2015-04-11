@@ -11,7 +11,7 @@
 static uint16_t OC_WELL_KNOWN_PORT = 5683;
 #define TAG "csdkWrapper"
 
-static const std::string gUri = "/a/genericdevice";
+static std::string gUri = "/a/genericdevice";
 
 static OCResourceHandle gResourceHandle;
 static std::string gParams[CsdkWrapper::NUM_PARAMS];
@@ -325,8 +325,9 @@ CsdkWrapper::CsdkWrapper()
         OC_LOG(ERROR, TAG, "OCStack init error");
     }
 }
-bool CsdkWrapper::start(EntityHandler handler)
+bool CsdkWrapper::start(EntityHandler handler, std::string uri)
 {
+    gUri = uri;
     OC_LOG(INFO, TAG, "Starting CsdkWrapper");
 
     if (!handler)

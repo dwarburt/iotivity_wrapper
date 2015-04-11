@@ -34,7 +34,7 @@ public:
     typedef EntityHandlerResult (*EntityHandler)(EntityHandlerInfo *request);
 
     CsdkWrapper();
-    bool start(EntityHandler handler);
+    bool start(EntityHandler handler, std::string uri);
     bool stop();
     bool respond(EntityHandlerInfo *response);
     bool process();

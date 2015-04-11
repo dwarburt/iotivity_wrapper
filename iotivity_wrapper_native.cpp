@@ -23,6 +23,7 @@ static bool s_quitFlag = false;
 static CsdkWrapper *s_wrapper;
 static uint32_t s_requestNumber = 0;
 static std::vector<std::pair<void*, void*>> handles;
+static std::string s_uri;
 
 uint32_t saveHandles(void *requestHandle, void *resourceHandle)
 {
@@ -154,7 +155,7 @@ void notifyJsNow(uv_async_t *handle, int /*status UNUSED*/)
 
 void doIotivityWork()
 {
-  if (!s_wrapper->start(entityHandlerCallback)) {
+  if (!s_wrapper->start(entityHandlerCallback, s_uri)) {
     std::cerr << "Unable to start!";
     return;
   }
@@ -184,9 +185,10 @@ NAN_METHOD(stop) {
 NAN_METHOD(start) {
   NanScope();
   s_wrapper = new CsdkWrapper();
-  if (args.Length() < 1) {
+  if (args.Length() < 2) {
     NanThrowTypeError("invalid number of params");
   }
+  s_uri = std::string(*NanUtf8String(args[1]));
   s_cb = new NanCallback(args[0].As<Function>());
 
   s_iotivityWorker = new std::thread(doIotivityWork);
