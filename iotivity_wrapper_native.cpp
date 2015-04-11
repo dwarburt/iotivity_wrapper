@@ -14,12 +14,28 @@
 using namespace v8;
 
 static uv_mutex_t s_callbackQueueMutex;
+static uv_mutex_t s_handlesMutex;
 static uv_async_t s_notifyJs;
 static std::queue<CsdkWrapper::EntityHandlerInfo *> s_callbackQueue;
 static NanCallback *s_cb;
 static std::thread *s_iotivityWorker;
 static bool s_quitFlag = false;
 static CsdkWrapper *s_wrapper;
+static uint32_t s_requestNumber = 0;
+static std::vector<std::pair<void*, void*>> handles;
+
+uint32_t saveHandles(void *requestHandle, void *resourceHandle)
+{
+  uv_mutex_lock(&s_handlesMutex);
+  handles.push_back(std::pair<void*,void*>(requestHandle, resourceHandle));
+  uint32_t ret = s_requestNumber++;
+  uv_mutex_unlock(&s_handlesMutex);
+  return ret;
+}
+std::pair<void*, void*> getHandles(uint32_t num)
+{
+  return handles[num];
+}
 
 CsdkWrapper::EntityHandlerResult entityHandlerCallback(CsdkWrapper::EntityHandlerInfo *request)
 {
@@ -54,13 +70,11 @@ NAN_METHOD(respond)
   CsdkWrapper::EntityHandlerInfo responseInfo;
   responseInfo.resource = std::string(*NanUtf8String(args.This()->Get(NanNew("resource"))));
   responseInfo.method   = std::string(*NanUtf8String(args.This()->Get(NanNew("method"))));
-  std::string reqh(*NanUtf8String(args.This()->Get(NanNew("requestHandle"))));
-  std::string resh(*NanUtf8String(args.This()->Get(NanNew("resourceHandle"))));
-  std::cout << "trying reqh " << reqh << std::endl;
-  std::cout << "trying resh" << resh << std::endl;
-  responseInfo.requestHandle = (void *)std::stol(reqh);
-  responseInfo.resourceHandle = (void *)std::stol(resh);
-//debug
+  uint32_t reqNum = NanUInt32OptionValue(args.This(), NanNew("requestNumber"), 0);
+  std::pair<void*, void*> hands = getHandles(reqNum);
+  responseInfo.requestHandle = hands.first;
+  responseInfo.resourceHandle = hands.second;
+  //debug
   printf("from js req handle: %p\n", responseInfo.requestHandle);
   printf("from js resource handle: %p\n", responseInfo.resourceHandle);
 
@@ -88,6 +102,8 @@ void pushUp(CsdkWrapper::EntityHandlerInfo *cbev)
     params->Set(i, NanNew(cbev->params[i]));
   }
 
+  uint32_t num = saveHandles(cbev->requestHandle, cbev->resourceHandle);
+
   //debug
   printf("to js req handle: %p\n", cbev->requestHandle);
   printf("to js resource handle: %p\n", cbev->resourceHandle);
@@ -98,8 +114,7 @@ void pushUp(CsdkWrapper::EntityHandlerInfo *cbev)
 
   data->Set(NanNew("resource"), NanNew(cbev->resource));
   data->Set(NanNew("method"  ), NanNew(cbev->method));
-  data->Set(NanNew("requestHandle"   ), NanNew(std::to_string((size_t)cbev->requestHandle)));
-  data->Set(NanNew("resourceHandle"  ), NanNew(std::to_string((size_t)cbev->resourceHandle)));
+  data->Set(NanNew("requestNumber"   ), NanNew(std::to_string(num)));
 
   data->Set(NanNew("params"  ), params);
   data->Set(NanNew("respond" ), NanNew<FunctionTemplate>(respond)->GetFunction());
