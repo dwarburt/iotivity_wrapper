@@ -14,4 +14,4 @@ To use:
 
 **N.B. tested against the plugfest-1 branch.**
 
-
+prereqs: git and node and iotivity installed.
